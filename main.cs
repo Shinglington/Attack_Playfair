@@ -4,20 +4,37 @@ namespace AttackPlayfair
 {
     class Program
     {
-		static NgramScores ngramScores = new NgramScores();
+        private const double TEMP = 20;
+        private const double STEP = 0.2;
+        private const int COUNT = 1000;
+
+        private NgramScores ngramScores;
+
         public static void Main(string[] args)
         {
+            ngramScores = new NgramScores();
             AttackPlayfair();
         }
-		
+
         public static void AttackPlayfair()
         {
             string ciphertext = GetCiphertext();
             Console.WriteLine("Attempting to crack Playfair Cipher, this may take a while");
 
-            string best_key = Utility.GetRandomKey();
-            int best_score = ngramScores.CalculateScore(Playfair.DecryptPlayfair(ciphertext, best_key));
-            Console.WriteLine(ciphertext);
+            string bestKey = Utility.GetRandomKey();
+            double bestScore, currentScore;
+            int iteration = 0, keystreak = 0;
+            bestScore = -99e99;
+            while (keystreak < 3)
+            {
+                iteration += 1;
+                currentScore = SimulatedAnnealing(ciphertext, bestKey);
+                if (currentScore > bestScore)
+                {
+                    bestScore = currentScore;
+                }
+
+            }
         }
 
         private static string GetCiphertext()
@@ -34,9 +51,32 @@ namespace AttackPlayfair
             return ciphertext;
         }
 
-        private static string SimulatedAnnealing(string ciphertext, string best_key)
+        private static double SimulatedAnnealing(string ciphertext, ref string bestKey)
         {
-            return best_key;
+            string currentKey, currentDecipher;
+            double currentScore, bestScore, scoreDiff, prob;
+
+			currentDecipher = Playfair.DecryptPlayfair(ciphertext, bestKey);
+			bestScore = NgramScores.CalculateScore(currentDecipher);
+			
+            for (double T = TEMP; T >= 0; T -= STEP)
+                for (int count = 0; count < COUNT; count++)
+                {
+                    Utility.AlterKey(currentKey, bestKey);
+                    currentDecipher = Playfair.DecryptPlayfair(ciphertext, currentKey);
+                    currentScore = NgramScores.CalculateScore(currentDecipher);
+					scoreDiff = currentScore - bestScore;
+					if (scoreDiff >= 0) {
+						
+					}
+					else if (T > 0) {
+						prob = Math.Exp(scoreDiff / T);
+						if (prob > )
+					}
+					
+                }
+
+            return bestKey;
         }
 
     }
