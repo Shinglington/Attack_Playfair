@@ -8,11 +8,13 @@ namespace AttackPlayfair
         private const double STEP = 0.2;
         private const int COUNT = 1000;
 
-        private NgramScores ngramScores;
+        private static NgramScores ngramScores;
+        private static Random random;
 
         public static void Main(string[] args)
         {
             ngramScores = new NgramScores();
+            random = new Random();
             AttackPlayfair();
         }
 
@@ -28,7 +30,7 @@ namespace AttackPlayfair
             while (keystreak < 3)
             {
                 iteration += 1;
-                currentScore = SimulatedAnnealing(ciphertext, bestKey);
+                currentScore = SimulatedAnnealing(ciphertext, ref bestKey);
                 if (currentScore > bestScore)
                 {
                     bestScore = currentScore;
@@ -53,30 +55,34 @@ namespace AttackPlayfair
 
         private static double SimulatedAnnealing(string ciphertext, ref string bestKey)
         {
-            string currentKey, currentDecipher;
-            double currentScore, bestScore, scoreDiff, prob;
+            string currentKey, tempKey, currentDecipher;
+            double currentScore, tempScore, bestScore, scoreDiff, prob;
 
-			currentDecipher = Playfair.DecryptPlayfair(ciphertext, bestKey);
-			bestScore = NgramScores.CalculateScore(currentDecipher);
-			
+            currentDecipher = Playfair.DecryptPlayfair(ciphertext, bestKey);
+            bestScore = ngramScores.CalculateScore(currentDecipher);
+            currentKey = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
             for (double T = TEMP; T >= 0; T -= STEP)
                 for (int count = 0; count < COUNT; count++)
                 {
-                    Utility.AlterKey(currentKey, bestKey);
+                    tempScore = Utility.AlterKey(bestKey);
                     currentDecipher = Playfair.DecryptPlayfair(ciphertext, currentKey);
-                    currentScore = NgramScores.CalculateScore(currentDecipher);
-					scoreDiff = currentScore - bestScore;
-					if (scoreDiff >= 0) {
-						
-					}
-					else if (T > 0) {
-						prob = Math.Exp(scoreDiff / T);
-						if (prob > )
-					}
-					
+                    currentScore = ngramScores.CalculateScore(currentDecipher);
+                    scoreDiff = currentScore - bestScore;
+                    if (scoreDiff >= 0)
+                    {
+
+                    }
+                    else if (T > 0)
+                    {
+                        prob = Math.Exp(scoreDiff / T);
+                        if (prob > random.NextDouble())
+                            currentKey = tempKey
+
+                    }
+
                 }
 
-            return bestKey;
+            return bestScore;
         }
 
     }
