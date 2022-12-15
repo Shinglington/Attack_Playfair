@@ -6,7 +6,7 @@ namespace AttackPlayfair
     {
         private const double TEMP = 20;
         private const double STEP = 0.2;
-        private const int COUNT = 1000;
+        private const int COUNT = 10000;
 
         private static NgramScores ngramScores;
         private static Random random;
@@ -34,7 +34,13 @@ namespace AttackPlayfair
                 if (currentScore > bestScore)
                 {
                     bestScore = currentScore;
+					Console.Write("\n\n\n");
+					Console.WriteLine("During iteration {0}, best score is {1}", iteration, bestScore);
+					Console.WriteLine(Playfair.DecryptPlayfair(ciphertext, bestKey));
                 }
+				else {
+					Console.WriteLine("Iteration {0}, no change in key. Score is {1}", iteration, bestScore);
+				}
 
             }
         }
@@ -55,35 +61,48 @@ namespace AttackPlayfair
 
         private static double SimulatedAnnealing(string ciphertext, ref string bestKey)
         {
-            string currentKey, tempKey, currentDecipher;
-            double currentScore, tempScore, bestScore, scoreDiff, prob;
+            string key, tempBestKey, decipher;
+            double tempBestScore, score, bestScore, scoreDiff, prob;
 
-            currentDecipher = Playfair.DecryptPlayfair(ciphertext, bestKey);
-            bestScore = ngramScores.CalculateScore(currentDecipher);
-            currentKey = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
+            decipher = Playfair.DecryptPlayfair(ciphertext, bestKey);
+            bestScore = ngramScores.CalculateScore(decipher);
+            tempBestKey = bestKey;
+            tempBestScore = bestScore;
             for (double T = TEMP; T >= 0; T -= STEP)
+            {
                 for (int count = 0; count < COUNT; count++)
                 {
-                    tempScore = Utility.AlterKey(bestKey);
-                    currentDecipher = Playfair.DecryptPlayfair(ciphertext, currentKey);
-                    currentScore = ngramScores.CalculateScore(currentDecipher);
-                    scoreDiff = currentScore - bestScore;
+                    key = Utility.AlterKey(tempBestKey);
+                    decipher = Playfair.DecryptPlayfair(ciphertext, key);
+                    score = ngramScores.CalculateScore(decipher);
+                    scoreDiff = score - tempBestScore;
                     if (scoreDiff >= 0)
                     {
-
+                        tempBestKey = key;
+                        tempBestScore = score;
                     }
                     else if (T > 0)
                     {
                         prob = Math.Exp(scoreDiff / T);
                         if (prob > random.NextDouble())
-                            currentKey = tempKey
-
+                        {
+                            tempBestKey = key;
+                            tempBestScore = score;
+                        }
                     }
 
+                    if (tempBestScore > bestScore)
+                    {
+                        bestScore = tempBestScore;
+                        bestKey = tempBestKey;
+						Console.WriteLine("\n\n\n");
+						Console.WriteLine("New best key {0} with score {1}", bestKey, bestScore);
+						Console.WriteLine(decipher);
+                    }
+          
                 }
-
+            }
             return bestScore;
         }
-
     }
 }
