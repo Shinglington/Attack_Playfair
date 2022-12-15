@@ -8,6 +8,7 @@ namespace AttackPlayfair
         private const double STEP = 0.2;
         private const int COUNT = 10000;
 
+		private const int MAX_KEYSTREAK = 10;
         private static NgramScores ngramScores;
         private static Random random;
 
@@ -27,7 +28,7 @@ namespace AttackPlayfair
             double bestScore, currentScore;
             int iteration = 0, keystreak = 0;
             bestScore = -99e99;
-            while (keystreak < 3)
+            while (keystreak < MAX_KEYSTREAK)
             {
                 iteration += 1;
                 currentScore = SimulatedAnnealing(ciphertext, ref bestKey);
@@ -37,9 +38,11 @@ namespace AttackPlayfair
 					Console.Write("\n\n\n");
 					Console.WriteLine("During iteration {0}, best score is {1}", iteration, bestScore);
 					Console.WriteLine(Playfair.DecryptPlayfair(ciphertext, bestKey));
+					keystreak = 0;
                 }
 				else {
 					Console.WriteLine("Iteration {0}, no change in key. Score is {1}", iteration, bestScore);
+					keystreak += 1;
 				}
 
             }
